@@ -1,12 +1,10 @@
 import { Reserva, Seat, Seats } from "./types";
 import { Db, MongoClient } from "mongodb";
-
 export const getAndSaveSeats = async (): Promise<Db> => {
   const dbName: string = "ExamenParcial";
   const collection: string = "Reserva";
 
   let date = new Date();
-
   let day = date.getDate();
   let month = date.getMonth() + 1;
   let year = date.getFullYear();
@@ -17,47 +15,40 @@ export const getAndSaveSeats = async (): Promise<Db> => {
   const client = new MongoClient(mongouri);
   try {
     await client.connect();
+    if(client)
     console.log("MongoDb coneccted");
     let seats: Seats = {
       puesto: 1,
-      estado: false,
-      token: undefined
+      email: undefined
     };
     var arr: Seat[] = [];
     for (let n = 1; n <= 20; n++) {
       arr.push(
         (seats = {
           puesto: n,
-          estado: false,
-          token:undefined
+          email:undefined
         })
       );
     }
-    const sitios = arr.map((char) => {
-      const { puesto, estado } = char;
-      return {
-        puesto: char.puesto,
-        estado: char.estado,
-        token: char.token
-      };
-    });
     const reserva: Reserva = {
       day: day,
       month: month,
       year: year,
-      seat: sitios,
+      seat: arr.map((char) => {
+        return {
+          puesto: char.puesto,
+          email: char.email,
+        }
+      })
     };
-    await client.connect();
-    console.info("MongoDB connected");
     const docs = await client
       .db(dbName)
       .collection(collection)
       .countDocuments();
     if (docs > 0) {
-      console.info("Characters are already in the DB");
+      console.info("Books are already in the DB");
       return client.db(dbName);
     } else {
-        console.log("llll")
       for (let n = 1; n <= 10; n++) {
         await client
           .db(dbName)
@@ -65,12 +56,12 @@ export const getAndSaveSeats = async (): Promise<Db> => {
           .insertMany([{
             day: reserva.day + n,
             month: reserva.month,
-            year: reserva.month,
+            year: reserva.year,
             seat: reserva.seat,
           }]);
+          console.log("Insertado %d",n);
       }
     }
-
     return client.db(dbName);
   } catch (error) {
     console.log(error);

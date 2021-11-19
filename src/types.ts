@@ -7,8 +7,7 @@ export type Reserva = {
 
 export type Seats={
     puesto: number;
-    estado: boolean;
-    token: undefined;
+    email: undefined;
 }
 export type Seat= Seats;
 
